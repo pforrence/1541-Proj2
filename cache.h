@@ -46,11 +46,22 @@ struct cache_t *
 
   return C;
 }
-
+void lru_update()
+{
+  return;
+}
+void cache_update()
+{
+  return;
+}
+int cache_check()
+{
+  return -1;
+}
 int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 {
-
-  hit = check_cache();
+  int hit;
+  hit = cache_check();
   if (hit == 1)
   {
     cp->mem_latency = 0;

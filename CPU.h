@@ -331,45 +331,9 @@ void printCantPredictBranch(unsigned char PRED_METH,struct trace_item pipeline[5
     }
 }
 
-void printOutput(struct trace_item pipeline[5], int trace_view_on, struct trace_item *tr_entry, unsigned int cycle_number, FILE *f)
+void printOutput(struct trace_item pipeline[5], int trace_view_on, struct trace_item *tr_entry, unsigned int cycle_number)
 {
   tr_entry = &pipeline[2];
-  switch(tr_entry->type) {
-    case ti_NOP:
-      fprintf(f, "[cycle %d] NOP:\n",cycle_number) ;
-      break;
-    case ti_RTYPE:
-      fprintf(f, "[cycle %d] RTYPE:",cycle_number) ;
-      fprintf(f, " (PC: %x)(sReg_a: %d)(sReg_b: %d)(dReg: %d) \n", tr_entry->PC, tr_entry->sReg_a, tr_entry->sReg_b, tr_entry->dReg);
-      break;
-    case ti_ITYPE:
-      fprintf(f,"[cycle %d] ITYPE:",cycle_number) ;
-      fprintf(f," (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", tr_entry->PC, tr_entry->sReg_a, tr_entry->dReg, tr_entry->Addr);
-      break;
-    case ti_LOAD:
-      fprintf(f,"[cycle %d] LOAD:",cycle_number) ;      
-      fprintf(f," (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", tr_entry->PC, tr_entry->sReg_a, tr_entry->dReg, tr_entry->Addr);
-      break;
-    case ti_STORE:
-      fprintf(f,"[cycle %d] STORE:",cycle_number) ;      
-      fprintf(f," (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", tr_entry->PC, tr_entry->sReg_a, tr_entry->sReg_b, tr_entry->Addr);
-      break;
-    case ti_BRANCH:
-      fprintf(f,"[cycle %d] BRANCH:",cycle_number) ;
-      fprintf(f," (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", tr_entry->PC, tr_entry->sReg_a, tr_entry->sReg_b, tr_entry->Addr);
-      break;
-    case ti_JTYPE:
-      fprintf(f,"[cycle %d] JTYPE:",cycle_number) ;
-      fprintf(f," (PC: %x)(addr: %x)\n", tr_entry->PC,tr_entry->Addr);
-      break;
-    case ti_SPECIAL:
-      fprintf(f,"[cycle %d] SPECIAL:\n",cycle_number) ;     
-      break;
-    case ti_JRTYPE:
-      fprintf(f,"[cycle %d] JRTYPE:",cycle_number) ;
-      fprintf(f," (PC: %x) (sReg_a: %d)(addr: %x)\n", tr_entry->PC, tr_entry->dReg, tr_entry->Addr);
-      break;
-  }
 if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
   tr_entry = &pipeline[2];
   switch(tr_entry->type) {
@@ -409,4 +373,89 @@ if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
      break;
   }
 }
+}
+void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trace_item pipeline[5], int* hashmap, 
+	struct cache_t *I_cache, struct trace_item *tr_entry, unsigned int* cycle_number)
+{    
+    if(trace_view_on == 2)
+      printf("\n--------------------------------------------------------------------------\n");
+
+    //1. analyize pipe to determine fetch, stall or squash
+    if(data_hazard(pipeline, trace_view_on))
+    {
+      if(trace_view_on == 2)
+        printf("\nDATA HAZARD - DONT FETCH\n");
+    }
+    else if(PRED_METH == 0 && branch_taken(pipeline))
+    {
+        if(trace_view_on == 2)
+          printf("\nBRANCH0 - SQUASH\n");
+    }
+    else if (PRED_METH == 1 && pipeline[2].type == ti_BRANCH && cannot_predict(hashmap, pipeline[2].PC) && pipeline[2].Addr == pipeline[1].PC)
+    {
+      if(trace_view_on == 2)
+        printf("\nBRANCH1 - SQUASH\n");
+    }
+    else if (PRED_METH == 1 && (pipeline[3].type == ti_BRANCH) && pipeline[2].type == ti_NOP)
+    {
+      if(trace_view_on == 2)
+        printf("\nBRANCH1 - SQUASHME\n");
+    }
+    else //otherwise try to fetch an instruction
+    {
+      if(trace_view_on == 2)
+        printf("\nINSTR FETCH\n");
+      *size = trace_get_item(&tr_entry); //fetch
+      *cycle_number = *cycle_number + cache_access(I_cache, tr_entry->PC, 0); /* simulate instruction fetch */
+      // update I_access and I_misses
+      //updateAccessMiss();
+    }
+    printCantPredictBranch(PRED_METH, pipeline, hashmap, trace_view_on);
+}
+void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number, unsigned int I_accesses, unsigned int I_misses, 
+	unsigned int D_read_accesses, unsigned int D_read_misses, unsigned int D_write_accesses, unsigned int D_write_misses,
+	struct trace_item *tr_entry, struct trace_item pipeline[5])
+{
+    if (!size && flush == 0) /* no more instructions (trace_items) to simulate */
+    {       
+      //end simulation
+      printf("+ Simulation terminates at cycle : %u \nEmpty Pipe:", cycle_number-1);
+      printf("+ Simulation terminates at cycle : %u\n", cycle_number);
+      printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
+      printf("D-cache Read accesses %u and misses %u\n", D_read_accesses, D_read_misses);
+      printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
+    }
+    else if(!size && *flush !=0) //no more fresh instructions, but pipeline is not flushed
+    {
+      if(*flush != 0)    //malloc a no-op instruction to keep the pipeline running till flushed
+      {
+        tr_entry = malloc(sizeof(struct trace_item));
+        tr_entry->type = 0;
+        *flush--;
+      }
+    }
+
+    if (trace_view_on)
+    {
+      printPipe(pipeline, trace_view_on);
+    }
+    printOutput(pipeline, trace_view_on, tr_entry, cycle_number);
+}
+void step3(unsigned int* cycle_number, 
+struct trace_item *tr_entry, 
+unsigned char* t_type,
+unsigned char* t_sReg_a,
+unsigned char* t_sReg_b,
+unsigned char* t_dReg,
+unsigned int* t_PC,
+unsigned int* t_Addr
+	)
+{
+    *t_type = tr_entry->type;
+    *t_sReg_a = tr_entry->sReg_a;
+    *t_sReg_b = tr_entry->sReg_b;
+    *t_dReg = tr_entry->dReg;
+    *t_PC = tr_entry->PC;
+    *t_Addr = tr_entry->Addr;
+    *cycle_number++;
 }
