@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 
     step1(trace_view_on, &size, PRED_METH, pipeline, hashmap, I_cache, &tr_entry, &cycle_number);
     step2(trace_view_on, size, &flush, cycle_number, I_accesses, I_misses, D_read_accesses, 
-      D_read_misses, D_write_accesses, D_write_misses, tr_entry, pipeline);
+      D_read_misses, D_write_accesses, D_write_misses, &tr_entry, pipeline);
     
     if (flush < 0)
       break;

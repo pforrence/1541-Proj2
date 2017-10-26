@@ -416,7 +416,7 @@ void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trac
 }
 void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number, unsigned int I_accesses, unsigned int I_misses, 
 	unsigned int D_read_accesses, unsigned int D_read_misses, unsigned int D_write_accesses, unsigned int D_write_misses,
-	struct trace_item *tr_entry, struct trace_item* pipeline)
+	struct trace_item** tr_entry, struct trace_item* pipeline)
 {
     if (!size && *flush == 0) /* no more instructions (trace_items) to simulate */
     {       
@@ -429,17 +429,13 @@ void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number
     }
     else if(!size && *flush !=0) //no more fresh instructions, but pipeline is not flushed
     {
-
-      if(*flush != 0)    //malloc a no-op instruction to keep the pipeline running till flushed
-      {
-        tr_entry = malloc(sizeof(struct trace_item));
-        tr_entry->type = 0;
+        *tr_entry = malloc(sizeof(struct trace_item));
+        (*tr_entry)->type = 0;
         (*flush)--;
-      }
     }
     if (trace_view_on)
     {
       printPipe(pipeline, trace_view_on);
     }
-    printOutput(pipeline, trace_view_on, tr_entry, cycle_number);
+    printOutput(pipeline, trace_view_on, *tr_entry, cycle_number);
 }
