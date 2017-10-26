@@ -106,7 +106,6 @@ int main(int argc, char **argv)
 
 
 //Main Loop ___________________________________________________________
-  
   int count = 100;
   int revert = -1;
   while(1) 
@@ -139,7 +138,8 @@ int main(int argc, char **argv)
 // IN ONE CYCLE, EXCEPT IF THERE IS A CACHE MISS.
 
 	cycle_number = cycle_number + cache_access(I_cache, tr_entry->PC, 0); /* simulate instruction fetch */
-	// update I_access and I_misses
+	updateAccessMiss();
+  // update I_access and I_misses
 
     revert--;
     if(trace_view_on == 2)

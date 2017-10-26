@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#define MEMORY_LATENCY_DEFAULT 20
 
 struct cache_blk_t { /* note that no actual data will be stored in the cache */
   unsigned long tag;
@@ -48,9 +49,26 @@ struct cache_t *
 
 int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 {
+
+  hit = check_cache();
+  if (hit == 1)
+  {
+    cp->mem_latency = 0;
+  }
+  else if (hit == 0)
+  {
+    cp->mem_latency = MEMORY_LATENCY_DEFAULT;
+    cache_update();
+  }
+  else if (hit == -1) //writeback is needed
+  {
+    cp->mem_latency = 2*MEMORY_LATENCY_DEFAULT;
+    cache_update();
+  }
+  lru_update();
   //
   // Based on "address", determine the set to access in cp and examine the blocks
-  // in the set to check hit/miss and update the golbal hit/miss statistics
+  // in the set to check hit/miss and update the global hit/miss statistics
   // If a miss, determine the victim in the set to replace (LRU). 
   //
   // The function should return the hit_latency, which is 0, in case of a hit.
