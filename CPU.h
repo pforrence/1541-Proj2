@@ -439,3 +439,22 @@ void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number
     }
     printOutput(pipeline, trace_view_on, *tr_entry, cycle_number);
 }
+void step3(
+unsigned char* t_type,
+unsigned char* t_sReg_a,
+unsigned char* t_sReg_b,
+unsigned char* t_dReg,
+unsigned int* t_PC,
+unsigned int* t_Addr,
+unsigned int* cycle_number,
+struct trace_item** tr_entry
+)
+{
+	(*cycle_number)++;
+    *t_type = (*tr_entry)->type;
+    *t_sReg_a = (*tr_entry)->sReg_a;
+    *t_sReg_b = (*tr_entry)->sReg_b;
+    *t_dReg = (*tr_entry)->dReg;
+    *t_PC = (*tr_entry)->PC;
+    *t_Addr = (*tr_entry)->Addr;
+}

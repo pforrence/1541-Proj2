@@ -107,15 +107,7 @@ int main(int argc, char **argv)
     
     if (flush < 0)
       break;
-
-    cycle_number++;
-    t_type = tr_entry->type;
-    t_sReg_a = tr_entry->sReg_a;
-    t_sReg_b = tr_entry->sReg_b;
-    t_dReg = tr_entry->dReg;
-    t_PC = tr_entry->PC;
-    t_Addr = tr_entry->Addr;
-
+    step3(&t_type, &t_sReg_a, &t_sReg_b, &t_dReg, &t_PC, &t_Addr, &cycle_number, &tr_entry);
 
     //4. Simulate the next instruction
     struct trace_item temp;
