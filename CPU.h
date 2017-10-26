@@ -418,25 +418,25 @@ void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number
 	unsigned int D_read_accesses, unsigned int D_read_misses, unsigned int D_write_accesses, unsigned int D_write_misses,
 	struct trace_item *tr_entry, struct trace_item* pipeline)
 {
-    if (!size && flush == 0) /* no more instructions (trace_items) to simulate */
+    if (!size && *flush == 0) /* no more instructions (trace_items) to simulate */
     {       
       //end simulation
-      printf("+ Simulation terminates at cycle : %u \nEmpty Pipe:", cycle_number-1);
       printf("+ Simulation terminates at cycle : %u\n", cycle_number);
       printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
       printf("D-cache Read accesses %u and misses %u\n", D_read_accesses, D_read_misses);
       printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
+      (*flush)--;
     }
     else if(!size && *flush !=0) //no more fresh instructions, but pipeline is not flushed
     {
+
       if(*flush != 0)    //malloc a no-op instruction to keep the pipeline running till flushed
       {
         tr_entry = malloc(sizeof(struct trace_item));
         tr_entry->type = 0;
-        *flush--;
+        (*flush)--;
       }
     }
-
     if (trace_view_on)
     {
       printPipe(pipeline, trace_view_on);
