@@ -331,17 +331,17 @@ void printCantPredictBranch(unsigned char PRED_METH,struct trace_item pipeline[5
     }
 }
 
-void printOutput(struct trace_item pipeline[5], int trace_view_on, struct trace_item *tr_entry, unsigned int cycle_number)
+void printOutput(struct trace_item* pipeline, int trace_view_on, struct trace_item *tr_entry, unsigned int cycle_number)
 {
   tr_entry = &pipeline[2];
 if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
   tr_entry = &pipeline[2];
   switch(tr_entry->type) {
     case ti_NOP:
-      printf("[cycle %d] NOP:\n",cycle_number) ;
+      printf("[cycle %d] NOP:\n", cycle_number) ;
       break;
     case ti_RTYPE:
-      printf("[cycle %d] RTYPE:",cycle_number) ;
+      printf("[cycle %d] RTYPE:", cycle_number) ;
       printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(dReg: %d) \n", tr_entry->PC, tr_entry->sReg_a, tr_entry->sReg_b, tr_entry->dReg);
       break;
     case ti_ITYPE:
@@ -373,9 +373,10 @@ if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
      break;
   }
 }
+
 }
-void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trace_item pipeline[5], int* hashmap, 
-	struct cache_t *I_cache, struct trace_item *tr_entry, unsigned int* cycle_number)
+void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trace_item* pipeline, int* hashmap, 
+	struct cache_t *I_cache, struct trace_item **tr_entry, unsigned int* cycle_number)
 {    
     if(trace_view_on == 2)
       printf("\n--------------------------------------------------------------------------\n");
@@ -405,8 +406,9 @@ void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trac
     {
       if(trace_view_on == 2)
         printf("\nINSTR FETCH\n");
-      *size = trace_get_item(&tr_entry); //fetch
-      *cycle_number = *cycle_number + cache_access(I_cache, tr_entry->PC, 0); /* simulate instruction fetch */
+      *size = trace_get_item(tr_entry); //fetch
+	  struct trace_item *temp = *tr_entry;
+      *cycle_number = *cycle_number + cache_access(I_cache, temp->PC, 0); /* simulate instruction fetch */
       // update I_access and I_misses
       //updateAccessMiss();
     }
@@ -414,7 +416,7 @@ void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trac
 }
 void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number, unsigned int I_accesses, unsigned int I_misses, 
 	unsigned int D_read_accesses, unsigned int D_read_misses, unsigned int D_write_accesses, unsigned int D_write_misses,
-	struct trace_item *tr_entry, struct trace_item pipeline[5])
+	struct trace_item *tr_entry, struct trace_item* pipeline)
 {
     if (!size && flush == 0) /* no more instructions (trace_items) to simulate */
     {       
@@ -440,22 +442,4 @@ void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number
       printPipe(pipeline, trace_view_on);
     }
     printOutput(pipeline, trace_view_on, tr_entry, cycle_number);
-}
-void step3(unsigned int* cycle_number, 
-struct trace_item *tr_entry, 
-unsigned char* t_type,
-unsigned char* t_sReg_a,
-unsigned char* t_sReg_b,
-unsigned char* t_dReg,
-unsigned int* t_PC,
-unsigned int* t_Addr
-	)
-{
-    *t_type = tr_entry->type;
-    *t_sReg_a = tr_entry->sReg_a;
-    *t_sReg_b = tr_entry->sReg_b;
-    *t_dReg = tr_entry->dReg;
-    *t_PC = tr_entry->PC;
-    *t_Addr = tr_entry->Addr;
-    *cycle_number++;
 }

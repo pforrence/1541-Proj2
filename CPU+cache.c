@@ -42,8 +42,8 @@ unsigned int D_write_misses = 0;
 
 int main(int argc, char **argv)
 {
+
   //Initiailize ___________________________________________________________
-  
   for(int i = 0; i < 64; i++)
   {
     hashmap[i] = -1;
@@ -56,17 +56,14 @@ int main(int argc, char **argv)
     fprintf(stdout, "\n(switch) to turn on or off individual item view.\n\n");
     exit(0);
   }
-    
+
+
   trace_file_name = argv[1];
-  if (argc == 3)
-  {
-    trace_view_on = atoi(argv[2]);
-  } 
+  if (argc >= 3) trace_view_on = atoi(argv[2]);
 
   fprintf(stdout, "\n ** opening file %s\n", trace_file_name);
 
   trace_fd = fopen(trace_file_name, "rb");
-
   if (!trace_fd) {
     fprintf(stdout, "\ntrace file %s not opened.\n\n", trace_file_name);
     exit(0);
@@ -81,13 +78,16 @@ int main(int argc, char **argv)
   unsigned int D_bsize = 8;
   unsigned int mem_latency = 20;
 
+
   if(argc >= 4)
   {
     PRED_METH = atoi(argv[2]);
   }
 
   trace_init();
+
   struct cache_t *I_cache, *D_cache;
+
   I_cache = cache_create(I_size, I_bsize, I_assoc, mem_latency); 
   D_cache = cache_create(D_size, D_bsize, D_assoc, mem_latency);
 
@@ -97,13 +97,24 @@ int main(int argc, char **argv)
   int revert = -1;
   while(1) 
   {
-    step1(trace_view_on, &size, PRED_METH, pipeline, hashmap, I_cache, tr_entry, &cycle_number);
+    count--;
+    if(count == 0)
+      exit(0);
+
+    step1(trace_view_on, &size, PRED_METH, pipeline, hashmap, I_cache, &tr_entry, &cycle_number);
     step2(trace_view_on, size, &flush, cycle_number, I_accesses, I_misses, D_read_accesses, 
       D_read_misses, D_write_accesses, D_write_misses, tr_entry, pipeline);
+    
     if (flush < 1)
       break;
-    step3(&cycle_number, tr_entry, &t_type, &t_sReg_a, 
-      &t_sReg_b, &t_dReg,&t_PC, &t_Addr);
+
+    cycle_number++;
+    t_type = tr_entry->type;
+    t_sReg_a = tr_entry->sReg_a;
+    t_sReg_b = tr_entry->sReg_b;
+    t_dReg = tr_entry->dReg;
+    t_PC = tr_entry->PC;
+    t_Addr = tr_entry->Addr;
 
 
     //4. Simulate the next instruction
@@ -163,7 +174,6 @@ int main(int argc, char **argv)
       temp = normal_flow(pipeline, &tr_entry); //move pipe
     }  
   }
-
   trace_uninit();
   exit(0);
 }
