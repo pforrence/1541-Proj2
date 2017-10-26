@@ -426,6 +426,8 @@ void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number
       printf("D-cache Read accesses %u and misses %u\n", D_read_accesses, D_read_misses);
       printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
       (*flush)--;
+      if ((*flush) < 0)
+        exit(0);
     }
     else if(!size && *flush !=0) //no more fresh instructions, but pipeline is not flushed
     {
