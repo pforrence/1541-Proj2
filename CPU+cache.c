@@ -89,10 +89,6 @@ int main(int argc, char **argv)
   unsigned int D_bsize = buff[20];
   unsigned int mem_latency = buff[24];
 
-  printf("\n\nmemLat: %u\n\n", mem_latency);
-
-  exit(0);
-
   fclose(fp);
 
   if(argc >= 4)
