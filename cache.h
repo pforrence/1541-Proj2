@@ -55,7 +55,7 @@ void cache_update()
 {
   return;
 }
-int cache_check(struct cache_t *cp, int newTag, int set)
+int cache_check(struct cache_t *cp, int newTag, int set, int access_type)
 {
 
   for(int i = 0; i < blcksPerSet; i++)
@@ -67,32 +67,32 @@ int cache_check(struct cache_t *cp, int newTag, int set)
   if (cp->blocks[set].tag == NULL)
     return 0;
 
+  lru_update();
+
+  //if dirtybit of cache access is 1, we write back
+  cache_update();
+  hit_miss_update();
+  if (access_type == 1)
+    dirtybit = 1;
   return -1;
 }
 int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 {
-  //int set = address%(cachesizeinWords/associativity);
-  //int tag = address/(cachesizeinWords/associativity);
+  int set = address%(cachesizeinWords/associativity);
+  int tag = address/(cachesizeinWords/associativity);
 
-  //set = set/blocksperset; //possibly if this isn't handled in the cache itself
+  set = set/wordsPerBlock;
 
   int hit;
-  hit = cache_check(cp, tag, set);
-  if (hit == 1)
-  {
+  hit = cache_check(cp, tag, set, access_type);
+
+  if (hit == 1)//if (valid bit == 1 && tag == tag)
     cp->mem_latency = 0;
-  }
-  else if (hit == 0)
-  {
+  else if (hit == 0)//if (valid bit == 0 || (valid bit == 1 && dirtybit == 0))
     cp->mem_latency = MEMORY_LATENCY_DEFAULT;
-    cache_update();
-  }
-  else if (hit == -1) //writeback is needed
-  {
+  else if (hit == -1) //if (valid bit == 1 && dirtybit == 1)
     cp->mem_latency = 2*MEMORY_LATENCY_DEFAULT;
-    cache_update();
-  }
-  lru_update();
+
   //
   // Based on "address", determine the set to access in cp and examine the blocks
   // in the set to check hit/miss and update the global hit/miss statistics
