@@ -375,6 +375,7 @@ if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
 }
 
 }
+
 void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trace_item* pipeline, int* hashmap, 
 	struct cache_t *I_cache, struct trace_item **tr_entry, unsigned int* cycle_number)
 {    
@@ -414,6 +415,7 @@ void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trac
     }
     printCantPredictBranch(PRED_METH, pipeline, hashmap, trace_view_on);
 }
+
 void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number, unsigned int I_accesses, unsigned int I_misses, 
 	unsigned int D_read_accesses, unsigned int D_read_misses, unsigned int D_write_accesses, unsigned int D_write_misses,
 	struct trace_item** tr_entry, struct trace_item* pipeline)
@@ -441,6 +443,7 @@ void step2(int trace_view_on, size_t size, int *flush, unsigned int cycle_number
     }
     printOutput(pipeline, trace_view_on, *tr_entry, cycle_number);
 }
+
 void step3(
 unsigned char* t_type,
 unsigned char* t_sReg_a,
