@@ -70,14 +70,30 @@ int main(int argc, char **argv)
   }
 
   // here you should extract the cache parameters from the configuration file (cache size, associativity, latency)
-  unsigned int I_size = 16; 
-  unsigned int I_assoc = 4;
-  unsigned int I_bsize = 8; 
-  unsigned int D_size = 16;
-  unsigned int D_assoc = 4;
-  unsigned int D_bsize = 8;
-  unsigned int mem_latency = 20;
 
+  FILE *fp;
+  int buff[100];
+
+  fp = fopen("cache_config.txt", "r");
+
+  int i;
+  for(i = 0; i < 100; i++){
+   fscanf(fp, "%d\n", buff + sizeof(int)*i);
+  }
+
+  unsigned int I_size = buff[0]; 
+  unsigned int I_assoc = buff[4];
+  unsigned int I_bsize = buff[8]; 
+  unsigned int D_size = buff[12];
+  unsigned int D_assoc = buff[16];
+  unsigned int D_bsize = buff[20];
+  unsigned int mem_latency = buff[24];
+
+  printf("\n\nmemLat: %u\n\n", mem_latency);
+
+  exit(0);
+
+  fclose(fp);
 
   if(argc >= 4)
   {
