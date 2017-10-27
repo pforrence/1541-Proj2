@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #define MEMORY_LATENCY_DEFAULT 20
+#define KILO 1024
 
 struct cache_blk_t { /* note that no actual data will be stored in the cache */
   unsigned long tag;
@@ -29,8 +30,8 @@ struct cache_t *
 
   // YOUR JOB: calculate the number of sets and blocks in the cache
   //
-  // nblocks = X;
-  // nsets = Y;
+  nblocks = (KILO*size)/blocksize; //so long as block and cache size are both measured in the same metric
+  nsets = nblocks/assoc;//
 
   struct cache_t *C = (struct cache_t *)calloc(1, sizeof(struct cache_t));
 		
@@ -54,14 +55,29 @@ void cache_update()
 {
   return;
 }
-int cache_check()
+int cache_check(struct cache_t *cp, int newTag, int set)
 {
+
+  for(int i = 0; i < blcksPerSet; i++)
+  {
+    if (cp->blocks[set].tag == newTag) 
+      return 1;
+  }
+
+  if (cp->blocks[set].tag == NULL)
+    return 0;
+
   return -1;
 }
 int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 {
+  //int set = address%(cachesizeinWords/associativity);
+  //int tag = address/(cachesizeinWords/associativity);
+
+  //set = set/blocksperset; //possibly if this isn't handled in the cache itself
+
   int hit;
-  hit = cache_check();
+  hit = cache_check(cp, tag, set);
   if (hit == 1)
   {
     cp->mem_latency = 0;
