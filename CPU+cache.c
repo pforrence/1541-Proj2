@@ -38,6 +38,7 @@ unsigned int D_read_accesses = 0;
 unsigned int D_read_misses = 0;
 unsigned int D_write_accesses = 0; 
 unsigned int D_write_misses = 0;
+int latency = 0;
 
 int main(int argc, char **argv)
 {
@@ -138,8 +139,13 @@ int main(int argc, char **argv)
 // SIMULATION OF A SINGLE CYCLE cpu IS TRIVIAL - EACH INSTRUCTION IS EXECUTED
 // IN ONE CYCLE, EXCEPT IF THERE IS A CACHE MISS.
 
-	cycle_number = cycle_number + cache_access(I_cache, tr_entry->PC, 0); /* simulate instruction fetch */
+  latency = cache_access(I_cache, tr_entry->PC, 0);
+	cycle_number = cycle_number + latency; /* simulate instruction fetch */
 	// update I_access and I_misses
+    I_accesses++;
+    if(latency)
+      I_misses++;
+
 
     revert--;
     if(trace_view_on == 2)
