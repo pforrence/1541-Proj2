@@ -39,6 +39,7 @@ unsigned int D_read_accesses = 0;
 unsigned int D_read_misses = 0;
 unsigned int D_write_accesses = 0; 
 unsigned int D_write_misses = 0;
+int latency = 0;
 
 int main(int argc, char **argv)
 {
@@ -117,7 +118,6 @@ int main(int argc, char **argv)
     step2(trace_view_on, size, &flush, cycle_number, I_accesses, I_misses, D_read_accesses, 
       D_read_misses, D_write_accesses, D_write_misses, &tr_entry, pipeline);
     step3(&t_type, &t_sReg_a, &t_sReg_b, &t_dReg, &t_PC, &t_Addr, &cycle_number, &tr_entry);
-
     //4. Simulate the next instruction
     struct trace_item temp;
     if(data_hazard(pipeline, trace_view_on))
