@@ -376,8 +376,16 @@ if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
 
 }
 
-updateAccessMiss(int cache_type, unsigned int *accesses, unsigned int *misses, int *dirty_bit, unsigned int *D_read_accesses, unsigned int *D_read_misses
-	unsigned int *D_write_accesses, unsigned int *D_write_misses, unsigned int *I_accesses, unsigned int *I_misses){
+updateAccessMiss(int cache_type,
+	unsigned int *accesses,
+	unsigned int *misses,
+	int *dirty_bit,
+	unsigned int *D_read_accesses,
+	unsigned int *D_read_misses,
+	unsigned int *D_write_accesses,
+	unsigned int *D_write_misses,
+	unsigned int *I_accesses,
+	unsigned int *I_misses){
 	if(cache_type){ //data cache
 	  if(dirty_bit){
 	    D_write_accesses += accesses;
