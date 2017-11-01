@@ -409,7 +409,7 @@ void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trac
         printf("\nINSTR FETCH\n");
       *size = trace_get_item(tr_entry); //fetch
 	  struct trace_item *temp = *tr_entry;
-      *cycle_number = *cycle_number + cache_access(I_cache, temp->PC, 0); /* simulate instruction fetch */
+      *cycle_number = *cycle_number + cache_access(I_cache, temp->PC, 0, 0); /* simulate instruction fetch */
       // update I_access and I_misses
       //updateAccessMiss();
     }
