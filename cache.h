@@ -164,7 +164,7 @@ int cache_access(struct cache_t *cp,
   // printf("%lu\n", tag_field);
 
   if(cp->blocks[set_index][tag_field].valid)
-    db = cp->blocks[set_index][tag_field].dirty;
+    *db = cp->blocks[set_index][tag_field].dirty;
   // printf("%d\n", db);
 
   int wb;

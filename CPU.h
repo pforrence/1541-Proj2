@@ -376,7 +376,7 @@ if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
 
 }
 
-updateAccessMiss(int cache_type,
+void updateAccessMiss(int cache_type,
 	unsigned int *accesses,
 	unsigned int *misses,
 	int *dirty_bit,
@@ -388,17 +388,17 @@ updateAccessMiss(int cache_type,
 	unsigned int *I_misses){
 	if(cache_type){ //data cache
 	  if(dirty_bit){
-	    D_write_accesses += accesses;
-	    D_write_misses += misses;
+	    *D_write_accesses += *accesses;
+	    *D_write_misses += *misses;
 	  }
 	  else{
-	    D_read_accesses += accesses;
-	    D_read_misses += misses;
+	    *D_read_accesses += *accesses;
+	    *D_read_misses += *misses;
 	  }
 	}
 	else{ //instruction cache
-	  I_accesses += accesses;
-	  I_misses += misses;
+	  *I_accesses += *accesses;
+	  *I_misses += *misses;
 	}
 }
 void step1(int trace_view_on, 
@@ -449,7 +449,8 @@ void step1(int trace_view_on,
 	  unsigned int accesses = 0;
 	  unsigned int misses = 0;
 	  unsigned int dirty_bit = 0;
-      *cycle_number = *cycle_number + cache_access(I_cache, 
+      *cycle_number = *cycle_number + cache_access(
+      I_cache, 
       temp->PC, 
       0, 
       0, 
@@ -457,7 +458,7 @@ void step1(int trace_view_on,
       &misses, 
       &dirty_bit); /* simulate instruction fetch */
       // update I_access and I_misses
-      updateAccessMiss(0, accesses, misses, dirty_bit, D_read_accesses, D_read_misses, D_write_accesses, D_write_misses, I_accesses, I_misses);
+      updateAccessMiss(0, &accesses, &misses, &dirty_bit, D_read_accesses, D_read_misses, D_write_accesses, D_write_misses, I_accesses, I_misses);
     }
     printCantPredictBranch(PRED_METH, pipeline, hashmap, trace_view_on);
 }
