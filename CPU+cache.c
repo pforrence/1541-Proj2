@@ -109,13 +109,17 @@ int main(int argc, char **argv)
 //Main Loop ___________________________________________________________
   int count = 100;
   int revert = -1;
+  unsigned int misses = 0;
+  unsigned int accesses = 0;
+  int dirtybit = 0;
   while(1) 
   {
     // count--;
     // if(count == 0)
     //   exit(0);
 
-    step1(trace_view_on, &size, PRED_METH, pipeline, hashmap, I_cache, &tr_entry, &cycle_number);
+    step1(trace_view_on, &size, PRED_METH, pipeline, hashmap, I_cache, &tr_entry, &cycle_number, &D_read_accesses, &D_read_misses, &D_write_accesses
+      &D_write_misses, &I_accesses, &I_misses);
     step2(trace_view_on, size, &flush, cycle_number, I_accesses, I_misses, D_read_accesses, 
       D_read_misses, D_write_accesses, D_write_misses, &tr_entry, pipeline);
     step3(&t_type, &t_sReg_a, &t_sReg_b, &t_dReg, &t_PC, &t_Addr, &cycle_number, &tr_entry);

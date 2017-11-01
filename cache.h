@@ -50,7 +50,7 @@ struct cache_t *
 
   return C;
 }
-void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type, int accesses, int misses){
+void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type, unsigned int *accesses, unsigned int *misses){
   accesses++;
   if(!hit) misses++;
   /*if(cache_type){ //data cache
@@ -88,7 +88,7 @@ void cache_update(struct cache_blk_t block, struct cache_t *cp, int newTag, int 
   lru_update(cp, set, block);
 }
 // The function should return the hit_latency, which is 0, in case of a hit.
-int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int cache_type, int accesses, int misses)
+int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int cache_type, unsigned int *accesses, unsigned int *misses)
 {
   int i;
   int wb = 0;
@@ -130,7 +130,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   }
   return 0;
 }
-int cache_access(struct cache_t *cp, unsigned long address, int access_type, int cache_type, int accesses, int misses)
+int cache_access(struct cache_t *cp, unsigned long address, int access_type, int cache_type, unsigned int *accesses, unsigned int *misses, int *db)
 {
   // printf("address: %lu\n", address);
   // printf("address(hex) : %lx", address);
@@ -157,8 +157,10 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type, int
   unsigned long tag_field = address >> (index_bc + boffset_bc);
   // printf("%lu\n", tag_field);
 
-  int dirty_bit = cp->blocks[set_index][tag_field].dirty;
-  // printf("%d\n", dirty_bit);
+  int db = 0;
+  if(cp->blocks[set_index][tag_field].valid)
+    db = cp->blocks[set_index][tag_field].dirty;
+  // printf("%d\n", db);
 
   int wb;
   wb = cache_check(cp, tag_field, set_index, access_type, cache_type, &accesses, &misses);
