@@ -51,22 +51,8 @@ struct cache_t *
   return C;
 }
 void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type, unsigned int *accesses, unsigned int *misses){
-  accesses++;
-  if(!hit) misses++;
-  /*if(cache_type){ //data cache
-    if(dirty_bit){
-      D_write_accesses++;
-      if(!hit) D_write_misses++;
-    }
-    else{
-      D_read_accesses++;
-      if(!hit) D_read_misses++;
-    }
-  }
-  else{ //instruction cache
-    I_accesses++;
-    if(!hit) I_misses++;
-  }*/
+  (*accesses)++;
+  if(!hit) (*misses)++;
 }
 // The LRU field of the blocks in the set accessed should also be updated.
 void lru_update(struct cache_t *cp, int set, struct cache_blk_t block)
@@ -92,13 +78,12 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
 {
   int i;
   int wb = 0;
-  struct cache_blk_t block, open_block, lru_block;
-  struct cache_blk_t *open_blk = &open_block;
-  struct cache_blk_t *lru_blk = &lru_block;
+  struct cache_blk_t block, *open_blk, *lru_blk;
   open_blk = NULL;
   lru_blk = NULL;
-  
+
   for(i = 0; i < cp->assoc; i++){
+    //printf("me\n");
     block = cp->blocks[set][i];
     if (block.tag == newTag && (int)block.valid && block.LRU > 0){ //check if hit
       hit_miss_update(cp, 1, block.dirty, cache_type, accesses, misses);
@@ -106,24 +91,26 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
       return 0;
     }
     else if(!(int)block.valid || block.LRU == 0){ //check if there's an open slot
-      open_block = block;
+      open_blk = &block;
     }
     else if(block.LRU == 1){ //find lru block
-      lru_block = block;
+      lru_blk = &block;
     }
   }
   // If a miss, determine the victim in the set to replace (LRU). 
   if(open_blk != NULL){
+      //printf("Tere\n");
     hit_miss_update(cp, 0, 0, cache_type, accesses, misses);
-    cache_update(open_block, cp, newTag, set, access_type);
+    cache_update(*open_blk, cp, newTag, set, access_type);
     return 1; // In case of a miss, the function should return mem_latency if no write back is needed.
   }
   else if(lru_blk != NULL){ //queue is full: remove lru and determine wb
-    if((int)lru_block.dirty){ //wb
+    if((int)(*lru_blk).dirty){ //wb
       wb = 1;
     }
+    //printf("DRere\n");
     hit_miss_update(cp, 0, wb, cache_type, accesses, misses);
-    cache_update(lru_block, cp, newTag, set, access_type);
+    cache_update(*lru_blk, cp, newTag, set, access_type);
     return ++wb;
     // If a write back is needed, the function should return 2*mem_latency.
     // In case of a miss, the function should return mem_latency if no write back is needed.
