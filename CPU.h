@@ -380,16 +380,16 @@ updateAccessMiss(int cache_type, int accesses, int misses, int dirty_bit){
 	if(cache_type){ //data cache
 	  if(dirty_bit){
 	    D_write_accesses += accesses;
-	    if(!hit) D_write_misses += misses;
+	    D_write_misses += misses;
 	  }
 	  else{
 	    D_read_accesses += accesses;
-	    if(!hit) D_read_misses += misses;
+	    D_read_misses += misses;
 	  }
 	}
 	else{ //instruction cache
 	  I_accesses += accesses;
-	  if(!hit) I_misses += misses;
+	  I_misses += misses;
 	}
 }
 void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trace_item* pipeline, int* hashmap, 
