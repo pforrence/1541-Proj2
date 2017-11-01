@@ -376,6 +376,22 @@ if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
 
 }
 
+updateAccessMiss(int cache_type, int accesses, int misses, int dirty_bit){
+	if(cache_type){ //data cache
+	  if(dirty_bit){
+	    D_write_accesses += accesses;
+	    if(!hit) D_write_misses += misses;
+	  }
+	  else{
+	    D_read_accesses += accesses;
+	    if(!hit) D_read_misses += misses;
+	  }
+	}
+	else{ //instruction cache
+	  I_accesses += accesses;
+	  if(!hit) I_misses += misses;
+	}
+}
 void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trace_item* pipeline, int* hashmap, 
 	struct cache_t *I_cache, struct trace_item **tr_entry, unsigned int* cycle_number)
 {    
@@ -409,9 +425,11 @@ void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trac
         printf("\nINSTR FETCH\n");
       *size = trace_get_item(tr_entry); //fetch
 	  struct trace_item *temp = *tr_entry;
-      *cycle_number = *cycle_number + cache_access(I_cache, temp->PC, 0, 0); /* simulate instruction fetch */
+	  int accesses = 0;
+	  int misses = 0;
+      *cycle_number = *cycle_number + cache_access(I_cache, temp->PC, 0, 0, &accesses, &misses); /* simulate instruction fetch */
       // update I_access and I_misses
-      //updateAccessMiss();
+      updateAccessMiss(0, accesses, misses, 0);
     }
     printCantPredictBranch(PRED_METH, pipeline, hashmap, trace_view_on);
 }

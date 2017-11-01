@@ -50,13 +50,15 @@ struct cache_t *
 
   return C;
 }
-void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type){
-  if(cache_type){ //data cache
-    if(dirty_bit){ // for d cache only
+void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type, int accesses, int misses){
+  accesses++;
+  if(!hit) misses++;
+  /*if(cache_type){ //data cache
+    if(dirty_bit){
       D_write_accesses++;
       if(!hit) D_write_misses++;
     }
-    else{ // for both i and d caches -- this needs to be changed
+    else{
       D_read_accesses++;
       if(!hit) D_read_misses++;
     }
@@ -64,7 +66,7 @@ void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type)
   else{ //instruction cache
     I_accesses++;
     if(!hit) I_misses++;
-  }
+  }*/
 }
 // The LRU field of the blocks in the set accessed should also be updated.
 void lru_update(struct cache_t *cp, int set, struct cache_blk_t block)
@@ -86,7 +88,7 @@ void cache_update(struct cache_blk_t block, struct cache_t *cp, int newTag, int 
   lru_update(cp, set, block);
 }
 // The function should return the hit_latency, which is 0, in case of a hit.
-int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int cache_type)
+int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int cache_type, int accesses, int misses)
 {
   int i;
   int wb = 0;
@@ -99,7 +101,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   for(i = 0; i < cp->assoc; i++){
     block = cp->blocks[set][i];
     if (block.tag == newTag && (int)block.valid && block.LRU > 0){ //check if hit
-      hit_miss_update(cp, 1, block.dirty, cache_type);
+      hit_miss_update(cp, 1, block.dirty, cache_type, &accesses, &misses);
       lru_update(cp, set, block);
       return 0;
     }
@@ -112,7 +114,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   }
   // If a miss, determine the victim in the set to replace (LRU). 
   if(open_blk != NULL){
-    hit_miss_update(cp, 0, 0, cache_type);
+    hit_miss_update(cp, 0, 0, cache_type, &accesses, &misses);
     cache_update(open_block, cp, newTag, set, access_type);
     return 1; // In case of a miss, the function should return mem_latency if no write back is needed.
   }
@@ -120,7 +122,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
     if((int)lru_block.dirty){ //wb
       wb = 1;
     }
-    hit_miss_update(cp, 0, wb, cache_type);
+    hit_miss_update(cp, 0, wb, cache_type, &accesses, &misses);
     cache_update(lru_block, cp, newTag, set, access_type);
     return ++wb;
     // If a write back is needed, the function should return 2*mem_latency.
@@ -128,7 +130,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   }
   return 0;
 }
-int cache_access(struct cache_t *cp, unsigned long address, int access_type, int cache_type)
+int cache_access(struct cache_t *cp, unsigned long address, int access_type, int cache_type, int accesses, int misses)
 {
   // printf("address: %lu\n", address);
   // printf("address(hex) : %lx", address);
@@ -159,7 +161,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type, int
   // printf("%d\n", dirty_bit);
 
   int wb;
-  wb = cache_check(cp, tag_field, set_index, access_type, cache_type);
+  wb = cache_check(cp, tag_field, set_index, access_type, cache_type, &accesses, &misses);
 
   return (wb*(cp->mem_latency));
 }
