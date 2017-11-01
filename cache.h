@@ -139,17 +139,26 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type, int
 {
   //
   int bsize_w = (cp->blocksize)/BIT32; /*blocksize, in words*/
+  printf("%d\n", bsize_w);
   // Based on "address", determine the set to access in cp and examine the blocks
   int byte_offset = 2;
+  printf("%d\n", byte_offset);
   unsigned long word_address = address >> byte_offset;
+  printf("%lu\n", word_address);
   int set_index = (word_address / bsize_w) % (cp->nsets * cp->assoc); /*where nsets*assoc=cache size in blocks*/
+  printf("%d\n", set_index);
   int block_offset = word_address & (bsize_w - 1); /*blocksize determines # offset bits*/
-  
+  printf("%d\n", block_offset);
+
   int index_bc = log(cp->nsets) / log(2); /*num bits in index*/
+  printf("%d\n", index_bc);
   int boffset_bc = log(bsize_w) / log(2); /*num bits in block offset*/
+  printf("%d\n", boffset_bc);
   unsigned long tag_field = address >> (index_bc + boffset_bc);
+  printf("%lu\n", tag_field);
 
   int dirty_bit = cp->blocks[set_index][tag_field].dirty;
+  printf("%d\n", dirty_bit)''
 
   int wb;
   wb = cache_check(cp, tag_field, set_index, access_type, cache_type);
