@@ -2,8 +2,15 @@
 #include <stdio.h>
 #define MEMORY_LATENCY_DEFAULT 20
 #define KILO 1024
+#define BIT32 32
 #include <math.h>
 
+extern unsigned int I_accesses;
+extern unsigned int I_misses;
+extern unsigned int D_read_accesses;
+extern unsigned int D_read_misses;
+extern unsigned int D_write_accesses; 
+extern unsigned int D_write_misses;
 
 struct cache_blk_t { /* note that no actual data will be stored in the cache */
   unsigned long tag;
@@ -52,12 +59,12 @@ struct cache_t *
 }
 void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit){
   if(dirty_bit){ // for d cache only
-    write_accesses++;
-    if(!hit) write_misses++;
+    D_write_accesses++;
+    if(!hit) D_write_misses++;
   }
-  else{ // for both i and d caches
-    read_accesses++;
-    if(!hit) read_misses++;
+  else{ // for both i and d caches -- this needs to be changed
+    D_read_accesses++;
+    if(!hit) D_read_misses++;
   }
 }
 // The LRU field of the blocks in the set accessed should also be updated.
@@ -77,7 +84,7 @@ void cache_update(struct cache_blk_t block, struct cache_t *cp, int newTag, int 
   block.tag = newTag;
   block.valid = '1';
   block.dirty = (char)access_type; // access_type (0 for a read and 1 for a write) should be used to set/update the dirty bit.
-  lru_update(cp, set, block, 0);
+  lru_update(cp, set, block);
 }
 // The function should return the hit_latency, which is 0, in case of a hit.
 int cache_check(struct cache_t *cp, int newTag, int set, int access_type)
@@ -85,6 +92,10 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type)
   int i;
   int wb = 0;
   struct cache_blk_t block, open_block, lru_block;
+  struct cache_blk_t *open_blk = &open_block;
+  struct cache_blk_t *lru_blk = &lru_block;
+  open_blk = NULL;
+  lru_blk = NULL;
   
   for(i = 0; i < cp->assoc; i++){
     block = cp->blocks[set][i];
@@ -101,12 +112,12 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type)
     }
   }
   // If a miss, determine the victim in the set to replace (LRU). 
-  if(open_block){
+  if(open_blk != NULL){
     hit_miss_update(cp, 0, 0);
     cache_update(open_block, cp, newTag, set, access_type);
     return 1; // In case of a miss, the function should return mem_latency if no write back is needed.
   }
-  else if(lru_block){ //queue is full: remove lru and determine wb
+  else if(lru_blk != NULL){ //queue is full: remove lru and determine wb
     if((int)lru_block.dirty){ //wb
       wb = 1;
     }
@@ -125,17 +136,17 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
   // Based on "address", determine the set to access in cp and examine the blocks
   int byte_offset = 2;
   unsigned long word_address = address >> byte_offset;
-  int set_index = (word_address / bsize_w) mod (nsets * assoc); /*where nsets*assoc=cache size in blocks*/
+  int set_index = (word_address / bsize_w) % (cp->nsets * cp->assoc); /*where nsets*assoc=cache size in blocks*/
   int block_offset = word_address & (bsize_w - 1); /*blocksize determines # offset bits*/
   
   int index_bc = log(cp->nsets) / log(2); /*num bits in index*/
   int boffset_bc = log(bsize_w) / log(2); /*num bits in block offset*/
   unsigned long tag_field = address >> (index_bc + boffset_bc);
 
-  int dirty_bit = cp->blocks[set_index][tag_field]->dirty;
+  int dirty_bit = cp->blocks[set_index][tag_field].dirty;
 
   int wb;
-  wb = cache_check(cp, tag_field, set_index);
+  wb = cache_check(cp, tag_field, set_index, access_type);
 
   return (wb*(cp->mem_latency));
 }
