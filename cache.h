@@ -158,7 +158,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type, int
   printf("%lu\n", tag_field);
 
   int dirty_bit = cp->blocks[set_index][tag_field].dirty;
-  printf("%d\n", dirty_bit)''
+  printf("%d\n", dirty_bit)
 
   int wb;
   wb = cache_check(cp, tag_field, set_index, access_type, cache_type);
