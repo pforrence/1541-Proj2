@@ -90,6 +90,7 @@ int main(int argc, char **argv)
   unsigned int D_bsize = buff[20];
   unsigned int mem_latency = buff[24];
 
+
   fclose(fp);
 
   if(argc >= 4)

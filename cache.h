@@ -2,15 +2,8 @@
 #include <stdio.h>
 #define MEMORY_LATENCY_DEFAULT 20
 #define KILO 1024
-#define BIT32 32
+#define BYTES_IN_A_WORD 4
 #include <math.h>
-
-extern unsigned int I_accesses;
-extern unsigned int I_misses;
-extern unsigned int D_read_accesses;
-extern unsigned int D_read_misses;
-extern unsigned int D_write_accesses; 
-extern unsigned int D_write_misses;
 
 struct cache_blk_t { /* note that no actual data will be stored in the cache */
   unsigned long tag;
@@ -137,28 +130,33 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
 }
 int cache_access(struct cache_t *cp, unsigned long address, int access_type, int cache_type)
 {
-  //
-  int bsize_w = (cp->blocksize)/BIT32; /*blocksize, in words*/
-  printf("%d\n", bsize_w);
+  // printf("address: %lu\n", address);
+  // printf("address(hex) : %lx", address);
+
+  // printf("%d\n", cp->blocksize);
+  // printf("%d\n", BYTES_IN_A_WORD);
+
+  int bsize_w = (cp->blocksize)/BYTES_IN_A_WORD; /*blocksize, in words*/
+  // printf("%d\n", bsize_w);
   // Based on "address", determine the set to access in cp and examine the blocks
   int byte_offset = 2;
-  printf("%d\n", byte_offset);
+  // printf("%d\n", byte_offset);
   unsigned long word_address = address >> byte_offset;
-  printf("%lu\n", word_address);
+  // printf("%lu\n", word_address);
   int set_index = (word_address / bsize_w) % (cp->nsets * cp->assoc); /*where nsets*assoc=cache size in blocks*/
-  printf("%d\n", set_index);
+  // printf("%d\n", set_index);
   int block_offset = word_address & (bsize_w - 1); /*blocksize determines # offset bits*/
-  printf("%d\n", block_offset);
+  // printf("%d\n", block_offset);
 
   int index_bc = log(cp->nsets) / log(2); /*num bits in index*/
-  printf("%d\n", index_bc);
+  // printf("%d\n", index_bc);
   int boffset_bc = log(bsize_w) / log(2); /*num bits in block offset*/
-  printf("%d\n", boffset_bc);
+  // printf("%d\n", boffset_bc);
   unsigned long tag_field = address >> (index_bc + boffset_bc);
-  printf("%lu\n", tag_field);
+  // printf("%lu\n", tag_field);
 
   int dirty_bit = cp->blocks[set_index][tag_field].dirty;
-  printf("%d\n", dirty_bit)
+  // printf("%d\n", dirty_bit);
 
   int wb;
   wb = cache_check(cp, tag_field, set_index, access_type, cache_type);
