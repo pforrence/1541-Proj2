@@ -393,9 +393,20 @@ updateAccessMiss(int cache_type, unsigned int *accesses, unsigned int *misses, i
 	  I_misses += misses;
 	}
 }
-void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trace_item* pipeline, int* hashmap, 
-	struct cache_t *I_cache, struct trace_item **tr_entry, unsigned int* cycle_number, unsigned int *D_read_accesses,
-	unsigned int *D_read_misses, unsigned int *D_write_accesses, unsigned int *D_write_misses, unsigned int *I_accesses, unsigned int *I_misses)
+void step1(int trace_view_on, 
+	size_t *size, 
+	unsigned char PRED_METH, 
+	struct trace_item* pipeline, 
+	int* hashmap, 
+	struct cache_t *I_cache, 
+	struct trace_item **tr_entry, 
+	unsigned int* cycle_number, 
+	unsigned int *D_read_accesses,
+	unsigned int *D_read_misses, 
+	unsigned int *D_write_accesses, 
+	unsigned int *D_write_misses, 
+	unsigned int *I_accesses, 
+	unsigned int *I_misses)
 {    
     if(trace_view_on == 2)
       printf("\n--------------------------------------------------------------------------\n");
@@ -427,12 +438,18 @@ void step1(int trace_view_on, size_t *size, unsigned char PRED_METH, struct trac
         printf("\nINSTR FETCH\n");
       *size = trace_get_item(tr_entry); //fetch
 	  struct trace_item *temp = *tr_entry;
-	  int accesses = 0;
-	  int misses = 0;
-	  int dirty_bit = 0;
-      *cycle_number = *cycle_number + cache_access(I_cache, temp->PC, 0, 0, &accesses, &misses, &dirty_bit); /* simulate instruction fetch */
+	  unsigned int accesses = 0;
+	  unsigned int misses = 0;
+	  unsigned int dirty_bit = 0;
+      *cycle_number = *cycle_number + cache_access(I_cache, 
+      temp->PC, 
+      0, 
+      0, 
+      &accesses, 
+      &misses, 
+      &dirty_bit); /* simulate instruction fetch */
       // update I_access and I_misses
-      updateAccessMiss(0, &accesses, &misses, &dirty_bit, &D_read_accesses, &D_read_misses, &D_write_accesses, &D_write_misses, &I_accesses, &I_misses);
+      updateAccessMiss(0, accesses, misses, dirty_bit, D_read_accesses, D_read_misses, D_write_accesses, D_write_misses, I_accesses, I_misses);
     }
     printCantPredictBranch(PRED_METH, pipeline, hashmap, trace_view_on);
 }

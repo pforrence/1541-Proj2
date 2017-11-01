@@ -130,7 +130,13 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   }
   return 0;
 }
-int cache_access(struct cache_t *cp, unsigned long address, int access_type, int cache_type, unsigned int *accesses, unsigned int *misses, int *db)
+int cache_access(struct cache_t *cp, 
+  unsigned long address, 
+  int access_type, 
+  int cache_type, 
+  unsigned int *accesses, 
+  unsigned int *misses, 
+  int *db)
 {
   // printf("address: %lu\n", address);
   // printf("address(hex) : %lx", address);
