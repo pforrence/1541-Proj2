@@ -379,7 +379,7 @@ if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
 void updateAccessMiss(int cache_type,
 	unsigned int *accesses,
 	unsigned int *misses,
-	int *dirty_bit,
+	unsigned int *dirty_bit,
 	unsigned int *D_read_accesses,
 	unsigned int *D_read_misses,
 	unsigned int *D_write_accesses,

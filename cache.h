@@ -83,11 +83,12 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   lru_blk = NULL;
 
   for(i = 0; i < cp->assoc; i++){
-    //printf("me\n");
+    
     block = cp->blocks[set][i];
     if (block.tag == newTag && (int)block.valid && block.LRU > 0){ //check if hit
       hit_miss_update(cp, 1, block.dirty, cache_type, accesses, misses);
       lru_update(cp, set, block);
+      printf("hit1\n");
       return 0;
     }
     else if(!(int)block.valid || block.LRU == 0){ //check if there's an open slot
@@ -99,22 +100,24 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   }
   // If a miss, determine the victim in the set to replace (LRU). 
   if(open_blk != NULL){
-      //printf("Tere\n");
+      printf("miss1\n");
     hit_miss_update(cp, 0, 0, cache_type, accesses, misses);
     cache_update(*open_blk, cp, newTag, set, access_type);
     return 1; // In case of a miss, the function should return mem_latency if no write back is needed.
   }
-  else if(lru_blk != NULL){ //queue is full: remove lru and determine wb
+  else if(lru_blk != NULL)
+  { //queue is full: remove lru and determine wb
     if((int)(*lru_blk).dirty){ //wb
       wb = 1;
     }
-    //printf("DRere\n");
+    printf("Other\n");
     hit_miss_update(cp, 0, wb, cache_type, accesses, misses);
     cache_update(*lru_blk, cp, newTag, set, access_type);
     return ++wb;
     // If a write back is needed, the function should return 2*mem_latency.
     // In case of a miss, the function should return mem_latency if no write back is needed.
   }
+  printf("hit2\n");
   return 0;
 }
 int cache_access(struct cache_t *cp, 
@@ -123,7 +126,7 @@ int cache_access(struct cache_t *cp,
   int cache_type, 
   unsigned int *accesses, 
   unsigned int *misses, 
-  int *db)
+  unsigned int *db)
 {
   // printf("address: %lu\n", address);
   // printf("address(hex) : %lx", address);
