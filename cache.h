@@ -154,7 +154,7 @@ int cache_access(struct cache_t *cp,
   // printf("%d\n", index_bc);
   int boffset_bc = log(bsize_w) / log(2); /*num bits in block offset*/
   // printf("%d\n", boffset_bc);
-  unsigned long tag_field = address >> (index_bc + boffset_bc);
+  unsigned long tag_field = word_address >> (index_bc + boffset_bc);
   // printf("%lu\n", tag_field);
 
   if(cp->blocks[set_index][tag_field].valid)
