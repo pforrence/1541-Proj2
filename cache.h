@@ -81,11 +81,15 @@ int cache_check(struct cache_t *cp, int newTag, int set, char access_type, int c
   struct cache_blk_t block, *block_pointer, *open_blk, *lru_blk;
   open_blk = NULL;
   lru_blk = NULL;
+  //if (*db == 1 && newTag != block.tag)
 
   for(i = 0; i < cp->assoc; i++){
-    
+
     block = cp->blocks[set][i];
     block_pointer = &cp->blocks[set][i];
+
+  if (*db == 1 && newTag != block.tag)
+    printf("writeback");
     // printf("block.tag: %lu\n", block.tag);
     // printf("block.valid: %d\n", block.valid);
     // printf("block.LRU: %d\n", block.LRU);
@@ -129,7 +133,8 @@ int cache_check(struct cache_t *cp, int newTag, int set, char access_type, int c
   //printf("hit2\n");
   return 0;
 }
-int cache_access(struct cache_t *cp, 
+int cache_access(
+  struct cache_t *cp, 
   unsigned long address, 
   char access_type, 
   int cache_type, 
@@ -195,7 +200,6 @@ int cache_access(struct cache_t *cp,
   if(cp->blocks[set_index][tag].valid)
     *db = cp->blocks[set_index][tag].dirty;
   // printf("%d\n", db);
-
   int wb;
   wb = cache_check(cp, tag, set_index, access_type, cache_type, accesses, misses);
 

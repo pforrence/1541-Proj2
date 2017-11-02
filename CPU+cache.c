@@ -194,7 +194,7 @@ int main(int argc, char **argv)
         printf("\nC5: flow...\n");
       temp = normal_flow(pipeline, &tr_entry); //move pipe
     }  
-    /*step5(pipeline,
+    step5(pipeline,
           D_size, 
           D_assoc,
           D_bsize,
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
           &D_read_misses,
           &D_write_accesses,
           &D_write_misses,
-          &cycle_number);*/
+          &cycle_number);
   }
   trace_uninit();
   exit(0);

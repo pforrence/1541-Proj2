@@ -385,7 +385,7 @@ void updateAccessMiss(int cache_type,
 	unsigned int *I_accesses,
 	unsigned int *I_misses){
 	if(cache_type){ //data cache
-	  if(dirty_bit){
+	  if(*dirty_bit){
 	    *D_write_accesses += *accesses;
 	    *D_write_misses += *misses;
 	  }
@@ -521,7 +521,6 @@ void step5(
   unsigned int D_assoc,
   unsigned int D_bsize,
   struct cache_t *D_cache, 
-
   unsigned int mem_latency,
 
   unsigned int* I_accesses,
