@@ -47,6 +47,7 @@ struct cache_t *
 
   for(i = 0; i < nsets; i++) {
     C->blocks[i] = (struct cache_blk_t *)calloc(assoc, sizeof(struct cache_blk_t));
+
     //printf("%d\n", C->blocks[i]->valid);
   }
 
@@ -68,9 +69,13 @@ void lru_update(struct cache_t *cp, int set, struct cache_blk_t* block)
 }
 void cache_update(struct cache_blk_t* block, struct cache_t *cp, unsigned long newTag, int set, char access_type)
 {
+  //printf("access_type inner: %d\n", access_type);
   (*block).tag = newTag;
   (*block).valid = 1;
-  (*block).dirty = access_type; // access_type (0 for a read and 1 for a write) should be used to set/update the dirty bit.
+  if (access_type == 1)
+    (*block).dirty = 1; // access_type (0 for a read and 1 for a write) should be used to set/update the dirty bit.
+  //printf("dirty inner: %d\n", (*block).dirty);
+  
   lru_update(cp, set, block);
 }
 // The function should return the hit_latency, which is 0, in case of a hit.
@@ -88,8 +93,8 @@ int cache_check(struct cache_t *cp, int newTag, int set, char access_type, int c
     block = cp->blocks[set][i];
     block_pointer = &cp->blocks[set][i];
 
-  if (*db == 1 && newTag != block.tag)
-    printf("writeback");
+  // if (*db == 1 && newTag != block.tag)
+  //   printf("writeback");
     // printf("block.tag: %lu\n", block.tag);
     // printf("block.valid: %d\n", block.valid);
     // printf("block.LRU: %d\n", block.LRU);
@@ -130,7 +135,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, char access_type, int c
     // If a write back is needed, the function should return 2*mem_latency.
     // In case of a miss, the function should return mem_latency if no write back is needed.
   }
-  //printf("hit2\n");
+  printf("hit2\n");
   return 0;
 }
 int cache_access(
@@ -142,63 +147,28 @@ int cache_access(
   unsigned int *misses, 
   unsigned int *db)
 {
+  printf("melp\n");
+
   int set_index = (address % (cp->nsets*cp->blocksize))/cp->blocksize;
   int tag = address / (cp->nsets*cp->blocksize);
 
-  //printf("address(hex) : %lx\n", address);
+    printf("address: %lu\n", address);
+    printf("set_index: %d\n", set_index);
+    printf("tag: %d\n", tag);
 
-  //printf("cp->blocksize: %d\n", cp->blocksize);
-  //printf("cp->nsets: %d\n", cp->nsets);
+  if (access_type == 1)
+    *db = 1;
 
-  // int wordsPerBlock = (cp->blocksize)/BYTES_IN_A_WORD;
-  // // printf("%d\n", bsize_w);
-  // // Based on "address", determine the set to access in cp and examine the blocks
-  // unsigned long word_address = address >> BYTE_OFFSET;
-  // // printf("%lu\n", word_address);
-  
-  // int set_index = ((word_address)%(cp->nsets* cp->assoc))/wordsPerBlock;
-  // // int set_index = (word_address / wordsPerBlock) % (cp->nsets * cp->assoc); /*where nsets*assoc=cache size in blocks*/
-  
-  // //printf("%d\n", set_index);
-  // // int tag = ((word_address)/(wordsPerCache/cp->assoc));
-
-  // int block_offset = word_address & (wordsPerBlock - 1); /*blocksize determines # offset bits*/
-  // // printf("%d\n", block_offset);
-
-  // int index_bc = log(cp->nsets) / log(2); /*num bits in index*/
-  // // printf("index_bc: %d\n", index_bc);
-  // int boffset_bc = log(wordsPerBlock) / log(2); /*num bits in block offset*/
-  // // printf("boffset bc: %d\n", boffset_bc);
-  
-
-  // unsigned long tag_field = word_address >> (index_bc + boffset_bc);
-  // //unsigned long tag = (word_address / wordsPerBlock) / (cp->nsets * cp->assoc);
-  // unsigned long tag = ((word_address)/(cp->nsets* cp->assoc));
+  else if ((access_type == 0 && cp->blocks[set_index][tag].valid == 0) || (access_type == 0 && cp->blocks[set_index][tag].tag != tag))
+    *db = 0;
 
 
-  // printf("(index_bc + boffset_bc): %d\n", (index_bc + boffset_bc));
-  // printf("word_address: %lu\n", word_address);
-  // printf("word_address >> 1: %lu\n", word_address >> 1);
-  // printf("word_address >> 2: %lu\n", word_address >> 2);
-  // printf("word_address >> 3: %lu\n", word_address >> 3);
-  // printf("word_address >> 4: %lu\n", word_address >> 4);
-  // printf("word_address >> 5: %lu\n", word_address >> 5);
-  // printf("word_address >> 6: %lu\n", word_address >> 6);
-  // printf("word_address >> 7: %lu\n", word_address >> 7);
-  // printf("word_address >> 8: %lu\n", word_address >> 8);
-  // printf("word_address >> 9: %lu\n", word_address >> 9);
-  // printf("word_address >> 10: %lu\n", word_address >> 10);
-  // printf("word_address >> 11: %lu\n", word_address >> 11);
-  // printf("word_address >> 12: %lu\n", word_address >> 12);
-  // printf("word_address >> 13: %lu\n", word_address >> 13);
-  // printf("word_address >> 14: %lu\n", word_address >> 14);
-  // printf("word_address >> 15: %lu\n", word_address >> 15);
-  // printf("word_address >> 16: %lu\n", word_address >> 16);
-  // printf("set: %d\n\n", set_index);
-  // printf("tag: %d\n\n", tag);
+    printf("zelp\n");
 
-  if(cp->blocks[set_index][tag].valid)
-    *db = cp->blocks[set_index][tag].dirty;
+
+  //printf("cp->blocks[set_index][tag].valid: %d\n", cp->blocks[set_index][tag].valid);
+  // if(cp->blocks[set_index][tag].valid)
+  //   *db = cp->blocks[set_index][tag].dirty;
   // printf("%d\n", db);
   int wb;
   wb = cache_check(cp, tag, set_index, access_type, cache_type, accesses, misses);

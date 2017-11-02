@@ -390,6 +390,8 @@ void updateAccessMiss(int cache_type,
 	    *D_write_misses += *misses;
 	  }
 	  else{
+	  	// if (access_type == 1)
+	  	//    *dirty_bit = 1;
 	    *D_read_accesses += *accesses;
 	    *D_read_misses += *misses;
 	  }
@@ -442,6 +444,9 @@ void step1(int trace_view_on,
     {
       if(trace_view_on == 2)
         printf("\nINSTR FETCH\n");
+
+      printf("help\n");
+
       *size = trace_get_item(tr_entry); //fetch
 	  struct trace_item *temp = *tr_entry;
 	  //printf("tr_entry->PC: %x\n", (*tr_entry)->PC);
@@ -450,10 +455,13 @@ void step1(int trace_view_on,
 	  //printf("tr_entry->type: %s\n", space);
 	  free(space);
 	  space = NULL;
+      printf("kelp\n");
 
 	  unsigned int accesses = 0;
 	  unsigned int misses = 0;
 	  unsigned int dirty_bit = 0;
+	      printf("help\n");
+
       *cycle_number = *cycle_number + cache_access(
       I_cache, 
       temp->PC, 
@@ -463,6 +471,8 @@ void step1(int trace_view_on,
       &misses, 
       &dirty_bit); /* simulate instruction fetch */
       // update I_access and I_misses
+      printf("welp\n");
+
       updateAccessMiss(0, &accesses, &misses, &dirty_bit, D_read_accesses, D_read_misses, D_write_accesses, D_write_misses, I_accesses, I_misses);
     }
     printCantPredictBranch(PRED_METH, pipeline, hashmap, trace_view_on);
@@ -535,15 +545,18 @@ void step5(
 {
   char access_type = -1;
   if (pipeline[3].type == ti_LOAD)
-    access_type = 1;
-  else if (pipeline[3].type == ti_STORE)
     access_type = 0;
+  else if (pipeline[3].type == ti_STORE)
+    access_type = 1;
 
   if (access_type != -1)
   {    
+
     unsigned int accesses = 0;
     unsigned int misses = 0;
     unsigned int dirty_bit = 0;
+    //printf("access_type: %d\n", access_type);
+
     *cycle_number = *cycle_number + cache_access(
       D_cache,
       pipeline[3].Addr,
@@ -553,6 +566,7 @@ void step5(
       &misses, 
       &dirty_bit);
 
+      //printf("dirty_bit: %d\n", dirty_bit);
       updateAccessMiss(
       1, 
       &accesses, 
@@ -564,5 +578,7 @@ void step5(
       D_write_misses, 
       I_accesses, 
       I_misses);
+      //printf("after dirty_bit: %d\n\n", dirty_bit);
+
     }
 }

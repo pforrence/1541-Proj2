@@ -90,7 +90,6 @@ int main(int argc, char **argv)
   unsigned int D_bsize = buff[20];
   unsigned int mem_latency = buff[24];
 
-
   fclose(fp);
 
   if(argc >= 4)
@@ -105,7 +104,6 @@ int main(int argc, char **argv)
   I_cache = cache_create(I_size, I_bsize, I_assoc, mem_latency); 
   D_cache = cache_create(D_size, D_bsize, D_assoc, mem_latency);
 
-
 //Main Loop ___________________________________________________________
   int count = 100;
   int revert = -1;
@@ -118,6 +116,7 @@ int main(int argc, char **argv)
       // if(count == 0)
       //   exit(0); 
     //printf("I_accesses: %u\n", I_accesses);
+
     step1(
       trace_view_on, &size, 
       PRED_METH, pipeline, 
@@ -126,6 +125,7 @@ int main(int argc, char **argv)
       &D_read_accesses, &D_read_misses, 
       &D_write_accesses, &D_write_misses, 
       &I_accesses, &I_misses);
+    printf("step2\n");
     step2(
       trace_view_on, size, 
       &flush, cycle_number, 
@@ -194,12 +194,15 @@ int main(int argc, char **argv)
         printf("\nC5: flow...\n");
       temp = normal_flow(pipeline, &tr_entry); //move pipe
     }  
+    printf("help\n");
+
     step5(pipeline,
           D_size, 
           D_assoc,
           D_bsize,
           D_cache,
           mem_latency,
+
           &I_accesses,
           &I_misses,
           &D_read_accesses,
@@ -208,6 +211,8 @@ int main(int argc, char **argv)
           &D_write_misses,
           &cycle_number);
   }
+  printf("kelp\n");
+
   trace_uninit();
   exit(0);
 }
