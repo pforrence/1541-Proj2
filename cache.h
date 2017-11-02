@@ -50,7 +50,7 @@ struct cache_t *
 
   return C;
 }
-void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type, unsigned int *accesses, unsigned int *misses){
+void hit_miss_update(int hit, unsigned int *accesses, unsigned int *misses){
   (*accesses)++;
   if(!hit) (*misses)++;
 }
@@ -58,11 +58,9 @@ void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type,
 void lru_update(struct cache_t *cp, int set, struct cache_blk_t* block)
 {
   int j;
-  struct cache_blk_t old_block;
   for(j = 0; j < cp->assoc; j++){
-    old_block = cp->blocks[set][j];
-    if(old_block.LRU > (*block).LRU)
-      old_block.LRU --;
+    if(cp->blocks[set][j].LRU > (*block).LRU)
+      cp->blocks[set][j].LRU--;
   }
   (*block).LRU = cp->assoc;
 }
@@ -78,34 +76,38 @@ int cache_check(struct cache_t *cp, int newTag, int set, char access_type, int c
 {
   int i;
   int wb = 0;
-  struct cache_blk_t block, *open_blk, *lru_blk;
+  struct cache_blk_t block, *block_pointer, *open_blk, *lru_blk;
   open_blk = NULL;
   lru_blk = NULL;
 
   for(i = 0; i < cp->assoc; i++){
     
     block = cp->blocks[set][i];
+    block_pointer = &cp->blocks[set][i];
     printf("block.tag: %lu\n", block.tag);
     printf("block.valid: %d\n", block.valid);
     printf("block.LRU: %d\n", block.LRU);
+    printf("set %d\n", set);
+    // printf("block.valid: %d\n", block.valid);
+    // printf("block.LRU: %d\n", block.LRU);
 
     if (block.tag == newTag && block.valid == 1 && block.LRU > 0){ //check if hit
-      hit_miss_update(cp, 1, block.dirty, cache_type, accesses, misses);
+      hit_miss_update(1, accesses, misses);
       lru_update(cp, set, &block);
       printf("hit1\n");
       return 0;
     }
     else if(block.valid == 0 || block.LRU == 0){ //check if there's an open slot
-      open_blk = &block;
+      open_blk = block_pointer;
     }
     else if(block.LRU == 1){ //find lru block
-      lru_blk = &block;
+      lru_blk = block_pointer;
     }
   }
   // If a miss, determine the victim in the set to replace (LRU). 
   if(open_blk != NULL){
       //printf("miss1\n");
-    hit_miss_update(cp, 0, 0, cache_type, accesses, misses);
+    hit_miss_update(0, accesses, misses);
     cache_update(open_blk, cp, newTag, set, access_type);
     return 1; // In case of a miss, the function should return mem_latency if no write back is needed.
   }
@@ -115,7 +117,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, char access_type, int c
       wb = 1;
     }
     printf("Other\n");
-    hit_miss_update(cp, 0, wb, cache_type, accesses, misses);
+    hit_miss_update(0, accesses, misses);
     cache_update(lru_blk, cp, newTag, set, access_type);
     return ++wb;
     // If a write back is needed, the function should return 2*mem_latency.
@@ -146,7 +148,7 @@ int cache_access(struct cache_t *cp,
   unsigned long word_address = address >> byte_offset;
   // printf("%lu\n", word_address);
   int set_index = (word_address / bsize_w) % (cp->nsets * cp->assoc); /*where nsets*assoc=cache size in blocks*/
-  // printf("%d\n", set_index);
+  //printf("%d\n", set_index);
   int block_offset = word_address & (bsize_w - 1); /*blocksize determines # offset bits*/
   // printf("%d\n", block_offset);
 
