@@ -55,26 +55,26 @@ void hit_miss_update(struct cache_t *cp, int hit, int dirty_bit, int cache_type,
   if(!hit) (*misses)++;
 }
 // The LRU field of the blocks in the set accessed should also be updated.
-void lru_update(struct cache_t *cp, int set, struct cache_blk_t block)
+void lru_update(struct cache_t *cp, int set, struct cache_blk_t* block)
 {
   int j;
   struct cache_blk_t old_block;
   for(j = 0; j < cp->assoc; j++){
     old_block = cp->blocks[set][j];
-    if(old_block.LRU > block.LRU)
+    if(old_block.LRU > (*block).LRU)
       old_block.LRU --;
   }
-  block.LRU = cp->assoc;
+  (*block).LRU = cp->assoc;
 }
-void cache_update(struct cache_blk_t block, struct cache_t *cp, int newTag, int set, int access_type)
+void cache_update(struct cache_blk_t* block, struct cache_t *cp, unsigned long newTag, int set, char access_type)
 {
-  block.tag = newTag;
-  block.valid = '1';
-  block.dirty = (char)access_type; // access_type (0 for a read and 1 for a write) should be used to set/update the dirty bit.
+  (*block).tag = newTag;
+  (*block).valid = 1;
+  (*block).dirty = access_type; // access_type (0 for a read and 1 for a write) should be used to set/update the dirty bit.
   lru_update(cp, set, block);
 }
 // The function should return the hit_latency, which is 0, in case of a hit.
-int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int cache_type, unsigned int *accesses, unsigned int *misses)
+int cache_check(struct cache_t *cp, int newTag, int set, char access_type, int cache_type, unsigned int *accesses, unsigned int *misses)
 {
   int i;
   int wb = 0;
@@ -85,13 +85,17 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   for(i = 0; i < cp->assoc; i++){
     
     block = cp->blocks[set][i];
-    if (block.tag == newTag && (int)block.valid && block.LRU > 0){ //check if hit
+    printf("block.tag: %lu\n", block.tag);
+    printf("block.valid: %d\n", block.valid);
+    printf("block.LRU: %d\n", block.LRU);
+
+    if (block.tag == newTag && block.valid == 1 && block.LRU > 0){ //check if hit
       hit_miss_update(cp, 1, block.dirty, cache_type, accesses, misses);
-      lru_update(cp, set, block);
+      lru_update(cp, set, &block);
       printf("hit1\n");
       return 0;
     }
-    else if(!(int)block.valid || block.LRU == 0){ //check if there's an open slot
+    else if(block.valid == 0 || block.LRU == 0){ //check if there's an open slot
       open_blk = &block;
     }
     else if(block.LRU == 1){ //find lru block
@@ -100,9 +104,9 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
   }
   // If a miss, determine the victim in the set to replace (LRU). 
   if(open_blk != NULL){
-      printf("miss1\n");
+      //printf("miss1\n");
     hit_miss_update(cp, 0, 0, cache_type, accesses, misses);
-    cache_update(*open_blk, cp, newTag, set, access_type);
+    cache_update(open_blk, cp, newTag, set, access_type);
     return 1; // In case of a miss, the function should return mem_latency if no write back is needed.
   }
   else if(lru_blk != NULL)
@@ -112,7 +116,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
     }
     printf("Other\n");
     hit_miss_update(cp, 0, wb, cache_type, accesses, misses);
-    cache_update(*lru_blk, cp, newTag, set, access_type);
+    cache_update(lru_blk, cp, newTag, set, access_type);
     return ++wb;
     // If a write back is needed, the function should return 2*mem_latency.
     // In case of a miss, the function should return mem_latency if no write back is needed.
@@ -122,7 +126,7 @@ int cache_check(struct cache_t *cp, int newTag, int set, int access_type, int ca
 }
 int cache_access(struct cache_t *cp, 
   unsigned long address, 
-  int access_type, 
+  char access_type, 
   int cache_type, 
   unsigned int *accesses, 
   unsigned int *misses, 

@@ -117,7 +117,7 @@ int main(int argc, char **argv)
       // count--;
       // if(count == 0)
       //   exit(0); 
-    printf("I_accesses: %u\n", I_accesses);
+    //printf("I_accesses: %u\n", I_accesses);
     step1(
       trace_view_on, &size, 
       PRED_METH, pipeline, 
