@@ -515,3 +515,55 @@ struct trace_item** tr_entry
     *t_PC = (*tr_entry)->PC;
     *t_Addr = (*tr_entry)->Addr;
 }
+void step5(
+  struct trace_item* pipeline,
+  unsigned int D_size, 
+  unsigned int D_assoc,
+  unsigned int D_bsize,
+  struct cache_t *D_cache, 
+
+  unsigned int mem_latency,
+
+  unsigned int* I_accesses,
+  unsigned int* I_misses,
+  unsigned int* D_read_accesses,
+  unsigned int* D_read_misses,
+  unsigned int* D_write_accesses,
+  unsigned int* D_write_misses,
+  unsigned int* cycle_number
+
+)
+{
+  char access_type = -1;
+  if (pipeline[3].type == ti_LOAD)
+    access_type = 1;
+  else if (pipeline[3].type == ti_STORE)
+    access_type = 0;
+
+  if (access_type != -1)
+  {    
+    unsigned int accesses = 0;
+    unsigned int misses = 0;
+    unsigned int dirty_bit = 0;
+    *cycle_number = *cycle_number + cache_access(
+      D_cache,
+      pipeline[3].Addr,
+      access_type,
+      1,
+      &accesses, 
+      &misses, 
+      &dirty_bit);
+
+      updateAccessMiss(
+      1, 
+      &accesses, 
+      &misses, 
+      &dirty_bit,
+      D_read_accesses, 
+      D_read_misses, 
+      D_write_accesses, 
+      D_write_misses, 
+      I_accesses, 
+      I_misses);
+    }
+}
