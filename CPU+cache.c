@@ -194,9 +194,57 @@ int main(int argc, char **argv)
         printf("\nC5: flow...\n");
       temp = normal_flow(pipeline, &tr_entry); //move pipe
     }  
+    step5
   }
   trace_uninit();
   exit(0);
 }
 
+void step5
+(
+  struct trace_item* pipeline,
+  unsigned int D_size, 
+  unsigned int D_assoc,
+  unsigned int D_bsize,
+  unsigned int mem_latency,
+  unsigned int* D_read_accesses,
+  unsigned int* D_read_misses,
+  unsigned int* D_write_accesses,
+  unsigned int* D_write_misses
+  )
+{
+  char access_type = -1;
+  if (pipeline[3]->type == ti_LOAD)
+    access_type = 1;
+  else if (pipeline[3]->type == ti_STORE)
+    access_type = 0;
 
+
+  if (access_type != -1)
+  {    
+    unsigned int accesses = 0;
+    unsigned int misses = 0;
+    unsigned int dirty_bit = 0;
+    *cycle_number = *cycle_number + cache_access(
+      D_cache,
+      temp->PC,
+      access_type,
+      1,
+      &accesses, 
+      &misses, 
+      &dirty_bit);
+
+      updateAccessMiss(
+      1, 
+      &accesses, 
+      &misses, 
+      &dirty_bit,
+      D_read_accesses, 
+      D_read_misses, 
+      D_write_accesses, 
+      D_write_misses, 
+      I_accesses, 
+      I_misses);
+    }
+
+}

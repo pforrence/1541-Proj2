@@ -446,7 +446,7 @@ void step1(int trace_view_on,
 	  struct trace_item *temp = *tr_entry;
 	  printf("tr_entry->PC: %x\n", (*tr_entry)->PC);
 	  char* space = malloc(sizeof(char)*10);
-     intToType((*tr_entry)->type, space);
+      intToType((*tr_entry)->type, space);
 	  printf("tr_entry->type: %s\n", space);
 	  free(space);
 	  space = NULL;
