@@ -330,7 +330,6 @@ void printCantPredictBranch(unsigned char PRED_METH,struct trace_item pipeline[5
 
     }
 }
-
 void printOutput(struct trace_item* pipeline, int trace_view_on, struct trace_item *tr_entry, unsigned int cycle_number)
 {
   tr_entry = &pipeline[2];
@@ -373,7 +372,6 @@ if (trace_view_on) {/* print the executed instruction if trace_view_on=1 */
      break;
   }
 }
-
 }
 
 void updateAccessMiss(int cache_type,
@@ -403,7 +401,7 @@ void updateAccessMiss(int cache_type,
 }
 void step1(int trace_view_on, 
 	size_t *size, 
-	unsigned char PRED_METH, 
+	unsigned char PRED_METH,
 	struct trace_item* pipeline, 
 	int* hashmap, 
 	struct cache_t *I_cache, 
@@ -446,6 +444,13 @@ void step1(int trace_view_on,
         printf("\nINSTR FETCH\n");
       *size = trace_get_item(tr_entry); //fetch
 	  struct trace_item *temp = *tr_entry;
+	  printf("tr_entry->PC: %x\n", (*tr_entry)->PC);
+	  char* space = malloc(sizeof(char)*10);
+     intToType((*tr_entry)->type, space);
+	  printf("tr_entry->type: %s\n", space);
+	  free(space);
+	  space = NULL;
+
 	  unsigned int accesses = 0;
 	  unsigned int misses = 0;
 	  unsigned int dirty_bit = 0;

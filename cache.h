@@ -46,6 +46,7 @@ struct cache_t *
 
   for(i = 0; i < nsets; i++) {
     C->blocks[i] = (struct cache_blk_t *)calloc(assoc, sizeof(struct cache_blk_t));
+    //printf("%d\n", C->blocks[i]->valid);
   }
 
   return C;
