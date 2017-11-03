@@ -125,7 +125,6 @@ int main(int argc, char **argv)
       &D_read_accesses, &D_read_misses, 
       &D_write_accesses, &D_write_misses, 
       &I_accesses, &I_misses);
-    printf("step2\n");
     step2(
       trace_view_on, size, 
       &flush, cycle_number, 
@@ -194,7 +193,6 @@ int main(int argc, char **argv)
         printf("\nC5: flow...\n");
       temp = normal_flow(pipeline, &tr_entry); //move pipe
     }  
-    printf("help\n");
 
     step5(pipeline,
           D_size, 
@@ -211,7 +209,6 @@ int main(int argc, char **argv)
           &D_write_misses,
           &cycle_number);
   }
-  printf("kelp\n");
 
   trace_uninit();
   exit(0);
